@@ -30,4 +30,7 @@ router.post(
 //GET - /notes/:id
 router.get("/notes/:id", noteController.getNote);
 
+//Delete - /delete/:id
+router.delete("/delete/:id", noteController.deleteNote);
+
 module.exports = router;
