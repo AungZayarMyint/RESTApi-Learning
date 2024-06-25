@@ -1,8 +1,21 @@
 const { validationResult } = require("express-validator");
+const Note = require("../models/note");
 
-exports.getNotes = (req, res, next) => {};
+// Get all notes
+exports.getNotes = (req, res, next) => {
+  Note.find()
+    .sort({ createdAt: -1 })
+    .then((notes) => {
+      res.status(200).json(notes);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ message: "Something went wrong!" });
+    });
+};
 
-exports.createNotes = (req, res, next) => {
+// Create a new note
+exports.createNote = (req, res, next) => {
   const { title, content } = req.body;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -12,11 +25,34 @@ exports.createNotes = (req, res, next) => {
     });
   }
 
-  res.status(201).json({
-    message: "Note Created!",
-    data: {
-      title,
-      content,
-    },
-  });
+  Note.create({
+    title,
+    content,
+  })
+    .then((note) => {
+      res.status(201).json({
+        message: "Note created!",
+        data: note,
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ message: "Something went wrong!" });
+    });
+};
+
+// Get a specific note by ID
+exports.getNote = (req, res, next) => {
+  const { id } = req.params;
+  Note.findById(id)
+    .then((note) => {
+      if (!note) {
+        return res.status(404).json({ message: "Note not found" });
+      }
+      res.status(200).json(note);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ message: "Something went wrong!" });
+    });
 };

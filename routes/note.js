@@ -24,7 +24,10 @@ router.post(
       .isLength({ min: 3 })
       .withMessage("Content is too short!"),
   ],
-  noteController.createNotes
+  noteController.createNote
 );
+
+//GET - /notes/:id
+router.get("/notes/:id", noteController.getNote);
 
 module.exports = router;
