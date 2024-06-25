@@ -72,3 +72,37 @@ exports.deleteNote = (req, res, next) => {
       });
     });
 };
+
+exports.getOldNote = (req, res, next) => {
+  const { id } = req.params;
+  Note.findById(id)
+    .then((note) => {
+      if (!note) {
+        return res.status(404).json({ message: "Note not found" });
+      }
+      res.status(200).json(note);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ message: "Something went wrong!" });
+    });
+};
+
+exports.updateNote = (req, res, next) => {
+  const { note_id, title, content } = req.body;
+  Note.findById(note_id)
+    .then((note) => {
+      note.title = title;
+      note.content = content;
+      return note.save();
+    })
+    .then((_) => {
+      return res.status(200).json({
+        message: "Note updated!!!",
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ message: "Something went wrong!" });
+    });
+};
