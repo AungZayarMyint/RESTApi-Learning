@@ -1,6 +1,9 @@
 const { validationResult } = require("express-validator");
 const Note = require("../models/note");
 
+//utils
+const { unlink } = require("../utils/unlink");
+
 // Get all notes
 exports.getNotes = (req, res, next) => {
   Note.find()
@@ -23,7 +26,7 @@ exports.createNote = (req, res, next) => {
   if (!errors.isEmpty()) {
     return res.status(400).json({
       message: "Validation failed.",
-      errorMessage: errors.array(),
+      errorMessages: errors.array(),
     });
   }
 
@@ -62,16 +65,19 @@ exports.getNote = (req, res, next) => {
 
 exports.deleteNote = (req, res, next) => {
   const { id } = req.params;
-  Note.findByIdAndDelete(id)
-    .then((_) => {
-      return res.status(204).json({
-        message: "Note Deleted!",
+  Note.findById(id)
+    .then((note) => {
+      unlink(note.cover_image);
+      return Note.findByIdAndDelete(id).then((_) => {
+        return res.status(204).json({
+          message: "Note deleted.",
+        });
       });
     })
     .catch((err) => {
       console.log(err);
       res.status(404).json({
-        message: "Something went wrong!",
+        message: "Something went wrong.",
       });
     });
 };
@@ -94,19 +100,26 @@ exports.getOldNote = (req, res, next) => {
 exports.updateNote = (req, res, next) => {
   const { note_id, title, content } = req.body;
   const cover_image = req.file;
+
   Note.findById(note_id)
     .then((note) => {
       note.title = title;
       note.content = content;
+      if (cover_image) {
+        unlink(note.cover_image);
+        note.cover_image = cover_image.path;
+      }
       return note.save();
     })
     .then((_) => {
       return res.status(200).json({
-        message: "Note updated!!!",
+        message: "Note Updated !",
       });
     })
     .catch((err) => {
-      console.error(err);
-      res.status(500).json({ message: "Something went wrong!" });
+      console.log(err);
+      res.status(404).json({
+        message: "Something went wrong.",
+      });
     });
 };
