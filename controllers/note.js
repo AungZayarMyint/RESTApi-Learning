@@ -17,6 +17,8 @@ exports.getNotes = (req, res, next) => {
 // Create a new note
 exports.createNote = (req, res, next) => {
   const { title, content } = req.body;
+  const cover_image = req.file;
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({
@@ -28,6 +30,7 @@ exports.createNote = (req, res, next) => {
   Note.create({
     title,
     content,
+    cover_image: cover_image ? cover_image.path : "",
   })
     .then((note) => {
       res.status(201).json({
@@ -90,6 +93,7 @@ exports.getOldNote = (req, res, next) => {
 
 exports.updateNote = (req, res, next) => {
   const { note_id, title, content } = req.body;
+  const cover_image = req.file;
   Note.findById(note_id)
     .then((note) => {
       note.title = title;
