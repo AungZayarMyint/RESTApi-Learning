@@ -40,4 +40,22 @@ router.post(
   authController.register
 );
 
+// POST - /login
+router.post(
+  "/login",
+  [
+    body("email")
+      .isEmail()
+
+      .withMessage("Please enter a valid email!")
+      .normalizeEmail(),
+
+    body("password")
+      .trim()
+      .isLength({ min: 4 })
+      .withMessage("Password must have at least 4 characters!"),
+  ],
+  authController.login
+);
+
 module.exports = router;
