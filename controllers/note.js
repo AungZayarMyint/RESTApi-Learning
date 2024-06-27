@@ -47,6 +47,7 @@ exports.createNote = (req, res, next) => {
     title,
     content,
     cover_image: cover_image ? cover_image.path : "",
+    creator: req.userId,
   })
     .then((note) => {
       res.status(201).json({
@@ -68,7 +69,7 @@ exports.getNote = (req, res, next) => {
       if (!note) {
         return res.status(404).json({ message: "Note not found" });
       }
-      res.status(200).json(note);
+      return res.status(200).json(note);
     })
     .catch((err) => {
       console.error(err);
@@ -80,7 +81,10 @@ exports.deleteNote = (req, res, next) => {
   const { id } = req.params;
   Note.findById(id)
     .then((note) => {
-      unlink(note.cover_image);
+      if (note.cover_image) {
+        unlink(note.cover_image);
+      }
+
       return Note.findByIdAndDelete(id).then((_) => {
         return res.status(204).json({
           message: "Note deleted.",
@@ -98,6 +102,7 @@ exports.deleteNote = (req, res, next) => {
 exports.getOldNote = (req, res, next) => {
   const { id } = req.params;
   Note.findById(id)
+    .populate("creator", "username")
     .then((note) => {
       if (!note) {
         return res.status(404).json({ message: "Note not found" });
@@ -119,7 +124,9 @@ exports.updateNote = (req, res, next) => {
       note.title = title;
       note.content = content;
       if (cover_image) {
-        unlink(note.cover_image);
+        if (note.cover_image) {
+          unlink(note.cover_image);
+        }
         note.cover_image = cover_image.path;
       }
       return note.save();

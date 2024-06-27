@@ -3,6 +3,7 @@ const router = express.Router();
 const { body } = require("express-validator");
 const authController = require("../controllers/auth");
 const User = require("../models/user");
+const authMiddleware = require("../middlewares/is-auth");
 
 //POST /register
 router.post(
@@ -57,5 +58,8 @@ router.post(
   ],
   authController.login
 );
+
+//Get - /status
+router.get("/status", authController.checkStatus);
 
 module.exports = router;
