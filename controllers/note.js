@@ -81,6 +81,9 @@ exports.deleteNote = (req, res, next) => {
   const { id } = req.params;
   Note.findById(id)
     .then((note) => {
+      if (note.creator.toString() !== req.userId) {
+        return res.status(401).json("Auth Failed!");
+      }
       if (note.cover_image) {
         unlink(note.cover_image);
       }
@@ -104,10 +107,10 @@ exports.getOldNote = (req, res, next) => {
   Note.findById(id)
     .populate("creator", "username")
     .then((note) => {
-      if (!note) {
-        return res.status(404).json({ message: "Note not found" });
+      if (note.creator.toString() !== req.userId) {
+        return res.status(401).json("Auth Failed!");
       }
-      res.status(200).json(note);
+      return res.status(200).json(note);
     })
     .catch((err) => {
       console.error(err);
@@ -121,6 +124,10 @@ exports.updateNote = (req, res, next) => {
 
   Note.findById(note_id)
     .then((note) => {
+      if (note.creator.toString() !== req.userId) {
+        return res.status(401).json("Auth Failed!");
+      }
+
       note.title = title;
       note.content = content;
       if (cover_image) {
